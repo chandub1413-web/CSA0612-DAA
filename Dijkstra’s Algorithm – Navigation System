@@ -1,0 +1,85 @@
+import heapq
+
+def dijkstra(graph, start):
+    # Distance from start to every node
+    distances = {node: float('inf') for node in graph}
+
+    # Previous node used to reconstruct path
+    previous = {node: None for node in graph}
+
+    distances[start] = 0
+
+    # Priority queue: (distance, node)
+    pq = [(0, start)]
+
+    while pq:
+        current_distance, current_node = heapq.heappop(pq)
+
+        # Ignore outdated entries
+        if current_distance > distances[current_node]:
+            continue
+
+        # Check all neighboring nodes
+        for neighbor, weight in graph[current_node]:
+
+            new_distance = current_distance + weight
+
+            # Relaxation
+            if new_distance < distances[neighbor]:
+
+                distances[neighbor] = new_distance
+                previous[neighbor] = current_node
+
+                heapq.heappush(
+                    pq,
+                    (new_distance, neighbor)
+                )
+
+    return distances, previous
+
+
+def get_path(previous, start, destination):
+
+    path = []
+    current = destination
+
+    while current is not None:
+        path.append(current)
+
+        if current == start:
+            break
+
+        current = previous[current]
+
+    path.reverse()
+
+    if path[0] != start:
+        return []
+
+    return path
+
+
+# Road network
+graph = {
+    'A': [('B', 4), ('C', 2)],
+    'B': [('A', 4), ('D', 3)],
+    'C': [('A', 2), ('D', 1)],
+    'D': [('B', 3), ('C', 1)]
+}
+
+start = 'A'
+destination = 'D'
+
+distances, previous = dijkstra(graph, start)
+
+path = get_path(previous, start, destination)
+
+print("Shortest distances from", start)
+
+for node in distances:
+    print(node, "=", distances[node])
+
+print("\nShortest path from", start, "to", destination, ":")
+print(" -> ".join(path))
+
+print("Total distance =", distances[destination])
